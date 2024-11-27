@@ -1,0 +1,19 @@
+{
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "husky": "^9.1.6",
+    "lint-staged": "^13.3.0",
+    "typescript": "^5.2.2"
+  },
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "test": "pnpm exec ts-node ./cypress/support/e2e.ts",
+    "prepare": "husky",
+    "lint:ui": "cd frontend && pnpm run lint",
+    "format:ui": "cd frontend && pnpm run format",
+    "build:ui": "cd frontend && pnpm run build",
+    "lint:python": "cd backend && poetry run dmypy run --timeout 600 -- looplit/",
+    "format:python": "black `git ls-files | grep '.py$'` && isort --profile=black ."
+  }
+}
