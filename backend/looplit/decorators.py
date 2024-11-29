@@ -86,6 +86,10 @@ def stateful(init_state: State):
             try:
                 map_tool_calls(args[0].messages, STATEFUL_FUNCS.keys())
 
+                await context.session.sync_tool_calls(
+                    FUNCS_TO_TOOL_CALLS, FUNCS_TO_LINEAGE_IDS
+                )
+
                 result = function(**params_values)
 
                 if inspect.iscoroutine(result):
@@ -97,10 +101,6 @@ def stateful(init_state: State):
                         lineage_id=lineage_id,
                         state=result.copy(deep=True),
                     )
-
-                await context.session.sync_tool_calls(
-                    FUNCS_TO_TOOL_CALLS, FUNCS_TO_LINEAGE_IDS
-                )
 
                 return result
             except CancelledError:
