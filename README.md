@@ -96,8 +96,9 @@ The `looplit` command will start a FastAPI server serving your agentic functions
 
 Looplit doesn't dictate how you should code your agent, but here are two simple examples showcasing a router agent capable of calling another agent:
 
-1. [OpenAI Sync Example](./examples/openai_multi_agent/)
-2. [LiteLLM (Anthropic) Async Example](./examples/anthropic_multi_agent/)
+1. [Mistral AI Sync Example](./examples/mistral_multi_agent/)
+2. [OpenAI Sync Example](./examples/openai_multi_agent/)
+3. [LiteLLM (Anthropic) Async Example](./examples/anthropic_multi_agent/)
 
 ## 🤙 Multi Agent Systems
 
