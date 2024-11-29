@@ -9,10 +9,12 @@ export default function StateBody() {
 
   return (
     <JsonEditor
-      onChange={(v) => setEditState(v as any)}
+      onChange={(v) =>
+        setEditState({ ...(v as any), messages: currentState.messages })
+      }
       height="100%"
       className="h-full pt-2 px-1"
-      value={omit(currentState, 'id')}
+      value={omit(currentState, 'id', 'messages')}
     />
   );
 }
