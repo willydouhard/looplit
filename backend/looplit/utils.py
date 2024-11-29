@@ -1,18 +1,10 @@
+import asyncio
 import sys
 from typing import Any, Coroutine, TypeVar
 
 from pydantic import BaseModel
 
-if sys.version_info >= (3, 10):
-    from typing import ParamSpec
-else:
-    from typing_extensions import ParamSpec
-
-import asyncio
-
 T_Retval = TypeVar("T_Retval")
-T_ParamSpec = ParamSpec("T_ParamSpec")
-T = TypeVar("T")
 
 
 def run_sync(co: Coroutine[Any, Any, T_Retval]) -> T_Retval:

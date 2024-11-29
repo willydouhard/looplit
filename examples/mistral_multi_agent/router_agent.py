@@ -10,27 +10,27 @@ client = Mistral(api_key=os.getenv("MISTRAL_API_KEY"))
 
 
 @ll.tool
-def get_weather(city: str) -> str:
+async def get_weather(city: str) -> str:
     """Get the weather for a given city"""
     return "10 degrees celsius"
 
 
 @ll.tool
-def call_customer_support_agent(query: str) -> str:
+async def call_customer_support_agent(query: str) -> str:
     """Redirect to the Customer Support Agent"""
     csa_state = csa_initial_state.copy(deep=True)
     csa_state.messages.append({"role": "user", "content": query})
-    result = customer_support_agent(csa_state)
+    result = await customer_support_agent(csa_state)
 
     return result.messages[-1].content
 
 
-def handle_tool_calls(state: ll.State, tool_calls):
+async def handle_tool_calls(state: ll.State, tool_calls):
     for tool_call in tool_calls:
         if tool_call.function.name == "get_weather":
-            result = get_weather(**json.loads(tool_call.function.arguments))
+            result = await get_weather(**json.loads(tool_call.function.arguments))
         elif tool_call.function.name == "call_customer_support_agent":
-            result = call_customer_support_agent(
+            result = await call_customer_support_agent(
                 **json.loads(tool_call.function.arguments)
             )
         else:
@@ -55,8 +55,8 @@ initial_state = ll.State(
 
 
 @ll.stateful(init_state=initial_state)
-def router_agent(state: ll.State) -> ll.State:
-    response = client.chat.complete(
+async def router_agent(state: ll.State) -> ll.State:
+    response = await client.chat.complete_async(
         model="mistral-large-latest",
         temperature=0,
         messages=state.messages,
@@ -65,8 +65,8 @@ def router_agent(state: ll.State) -> ll.State:
     state.messages.append(response.choices[0].message)
     tool_calls = response.choices[0].message.tool_calls
     if tool_calls:
-        handle_tool_calls(state, tool_calls)
-        return router_agent(state)
+        await handle_tool_calls(state, tool_calls)
+        return await router_agent(state)
     else:
         return state
 

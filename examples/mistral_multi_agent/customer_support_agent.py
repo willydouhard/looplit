@@ -9,15 +9,15 @@ client = Mistral(api_key=os.getenv("MISTRAL_API_KEY"))
 
 
 @ll.tool
-def get_order_status(order_id: str) -> str:
+async def get_order_status(order_id: str) -> str:
     """Get the status for a given order id"""
     return "in transit"
 
 
-def handle_tool_calls(state: ll.State, tool_calls):
+async def handle_tool_calls(state: ll.State, tool_calls):
     for tool_call in tool_calls:
         if tool_call.function.name == "get_order_status":
-            result = get_order_status(**json.loads(tool_call.function.arguments))
+            result = await get_order_status(**json.loads(tool_call.function.arguments))
         else:
             continue
 
@@ -42,8 +42,8 @@ csa_initial_state = ll.State(
 
 
 @ll.stateful(init_state=csa_initial_state)
-def customer_support_agent(state: ll.State) -> ll.State:
-    response = client.chat.complete(
+async def customer_support_agent(state: ll.State) -> ll.State:
+    response = await client.chat.complete_async(
         model="mistral-large-latest",
         temperature=0,
         messages=state.messages,
@@ -54,8 +54,8 @@ def customer_support_agent(state: ll.State) -> ll.State:
     tool_calls = response.choices[0].message.tool_calls
 
     if tool_calls:
-        handle_tool_calls(state, tool_calls)
-        return customer_support_agent(state)
+        await handle_tool_calls(state, tool_calls)
+        return await customer_support_agent(state)
     else:
         return state
 

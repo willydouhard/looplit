@@ -123,15 +123,10 @@ class Session:
         for func in funcs:
             tool_calls = funcs_to_tool_calls.get(func, [])
             lineage_ids = funcs_to_lineage_ids.get(func, [])
-            if len(tool_calls) == len(lineage_ids):
-                for tc, lid in zip(tool_calls, lineage_ids):
+
+            for tc, lid in zip(tool_calls, lineage_ids):
+                if tc and lid:
                     await self.emit("map_tc_to_lid", {"tc": tc, "lid": lid})
-
-                if funcs_to_tool_calls.get(func):
-                    funcs_to_tool_calls[func] = []
-
-                if funcs_to_lineage_ids.get(func):
-                    funcs_to_lineage_ids[func] = []
 
 
 sessions_sid: Dict[str, Session] = {}
