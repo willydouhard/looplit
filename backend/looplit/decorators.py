@@ -134,7 +134,7 @@ def tool(func: Callable) -> Callable:
 
     # Create a Pydantic model for the function's parameters
     ParamModel = create_model(
-        f"{func.__name__}Params",
+        f"{func.__name__}_params",
         **{name: (typ, ...) for name, typ in annotations.items()},
     )  # type: ignore
 
