@@ -4,9 +4,7 @@
 
 **Looplit is an unopinionated Agent Studio.**
 
-
-https://github.com/user-attachments/assets/de1961a8-7da5-42e5-a5dc-0fa6779420b9
-
+https://github.com/user-attachments/assets/37a69f13-a2f2-4c5b-85c2-24e2c867dfc3
 
 ## 🤔 Why Looplit?
 
