@@ -47,6 +47,15 @@ export const functionsState = atom<Record<string, ILooplitState> | undefined>({
   default: undefined
 });
 
+export const aiEditSuggestionState = atom<ILooplitState | undefined>({
+  key: 'AiEditSuggestion',
+  default: {
+    id: 'fef',
+    messages: [],
+    tools: []
+  }
+});
+
 export interface IInterrupt {
   callback: () => void;
   func_name: string;
@@ -69,5 +78,20 @@ export interface IError {
 
 export const errorState = atom<IError | undefined>({
   key: 'Error',
+  default: undefined
+});
+
+export interface ICanvasState {
+  sessionId: string;
+  running: boolean;
+  messages: { role: string; content: string }[];
+  context: string;
+  lineageId: string;
+  openCoords: { x: number; y: number };
+  aiState: string;
+}
+
+export const canvasState = atom<ICanvasState | undefined>({
+  key: 'Canvas',
   default: undefined
 });

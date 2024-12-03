@@ -17,6 +17,12 @@ import {
   FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ImagePlusIcon } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
@@ -109,14 +115,21 @@ export default function ImageDialog({ onAddImage }: Props) {
   return (
     <Dialog open={open} onOpenChange={(open) => setOpen(open)}>
       <DialogTrigger asChild>
-        <Button
-          className="text-muted-foreground"
-          onClick={() => setOpen(true)}
-          variant="ghost"
-          size="icon"
-        >
-          <ImagePlusIcon size={14} />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              className="text-muted-foreground"
+              onClick={() => setOpen(true)}
+              variant="ghost"
+              size="icon"
+            >
+              <ImagePlusIcon size={14} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Add Image</p>
+          </TooltipContent>
+        </Tooltip>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

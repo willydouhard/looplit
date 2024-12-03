@@ -1,4 +1,5 @@
 import FunctionViewContext from '../../context';
+import AskAIButton from './AskAIButton';
 import ForkButton from './ForkButton';
 import ForkNav from './ForkNav';
 import ToolCall from './ToolCall';
@@ -78,9 +79,10 @@ export default function ChatBody({ composerPlaceholderRef }: Props) {
                 </div>
               ) : null}
               <div className="flex items-center -ml-2">
+                <CopyButton content={m} />
                 <ForkNav index={i} />
                 <ForkButton index={i} />
-                <CopyButton content={m} />
+                <AskAIButton index={i} />
               </div>
             </Message>
           </div>

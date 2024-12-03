@@ -1,4 +1,5 @@
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 import { useCallback, useEffect, useRef } from 'react';
 
 interface Props extends React.ComponentProps<'textarea'> {
@@ -6,12 +7,16 @@ interface Props extends React.ComponentProps<'textarea'> {
   onPasteImage?: (base64Url: string) => void;
 }
 
-const AutoResizeTextarea = ({ maxHeight, onPasteImage, ...props }: Props) => {
+const AutoResizeTextarea = ({
+  maxHeight,
+  onPasteImage,
+  className,
+  ...props
+}: Props) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handlePaste = useCallback(
     (event: ClipboardEvent) => {
-      if (!open) return;
       const items = event.clipboardData?.items;
       if (items) {
         for (let i = 0; i < items.length; i++) {
@@ -65,7 +70,10 @@ const AutoResizeTextarea = ({ maxHeight, onPasteImage, ...props }: Props) => {
     <Textarea
       ref={textareaRef}
       {...props}
-      className="p-0 min-h-6 resize-none border-none overflow-y-auto shadow-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+      className={cn(
+        'p-0 min-h-6 resize-none border-none overflow-y-auto shadow-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0',
+        className
+      )}
       style={{ maxHeight }}
     />
   );

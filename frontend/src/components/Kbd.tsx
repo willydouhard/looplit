@@ -20,14 +20,14 @@ const Kbd = forwardRef(
       if (typeof child === 'string') {
         const lowerChild = child.toLowerCase();
         if (lowerChild === 'enter') {
-          return <CornerDownLeft className="h-4 w-4" />;
+          return <CornerDownLeft className="!size-3" />;
         }
         if (lowerChild === 'cmd+enter' || lowerChild === 'ctrl+enter') {
-          const cmdKey = isMac ? <Command className="h-4 w-4" /> : 'Ctrl';
+          const cmdKey = isMac ? <Command className="!size-3" /> : 'Ctrl';
           return (
             <>
               {cmdKey}
-              <CornerDownLeft className="h-4 w-4 ml-0.5" />
+              <CornerDownLeft className="!size-3 ml-0.5" />
             </>
           );
         }

@@ -11,13 +11,14 @@ interface Props {
   onChange?: (value: Record<string, unknown>) => void;
 }
 
-const defaultOptions = {
-  fontFamily: 'monospace, sans-serif',
+export const defaultOptions = {
+  fontFamily: 'inter, monospace, sans-serif',
   fontSize: 14,
   unicodeHighlight: {
     ambiguousCharacters: false,
     invisibleCharacters: false
   },
+  wordWrap: 'on' as const,
   minimap: { enabled: false },
   quickSuggestions: false,
   suggestOnTriggerCharacters: false,

@@ -40,7 +40,7 @@ export default function ToolCall({ call, messages }: Props) {
       ) : (
         <WrenchIcon className="w-3" />
       )}{' '}
-      {funcName}{' '}
+      {call.function.name}{' '}
       <span className="italic font-normal	text-muted-foreground">{call.id}</span>{' '}
       {loading ? <Loader /> : null}
     </Button>

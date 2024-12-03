@@ -68,3 +68,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+.monaco-light-card {
+  .monaco-editor {
+  --vscode-editor-background: #FBFBFB;
+  --vscode-editorGutter-background: #FBFBFB;
+  }
+}
+
+.monaco-dark-card {
+  .monaco-editor {
+  --vscode-editor-background: #0E1011;
+  --vscode-editorGutter-background: #0E1011;
+  }
+}
