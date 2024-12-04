@@ -3,10 +3,21 @@ import CanvasChat from './Chat';
 import CanvasHeader from './Header';
 import { canvasState } from '@/state';
 import { AnimatePresence, motion } from 'motion/react';
+import { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
 
+let [x, y] = [0, 0];
+
 const CodeCanvas = () => {
+  // TODO: Accept/Reject logic
   const [canvas, setCanvas] = useRecoilState(canvasState);
+
+  useEffect(() => {
+    if (canvas) {
+      x = canvas.openCoords.x;
+      y = canvas.openCoords.y;
+    }
+  }, [canvas]);
 
   const isOpen = !!canvas;
 
@@ -23,7 +34,7 @@ const CodeCanvas = () => {
             opacity: 1
           }}
           exit={{
-            clipPath: `circle(0px at ${canvas.openCoords.x}px ${canvas.openCoords.y}px)`,
+            clipPath: `circle(0px at ${x}px ${y}px)`,
             opacity: 0
           }}
           transition={{
@@ -66,7 +77,6 @@ const CodeCanvas = () => {
             >
               <CanvasHeader />
               <StateMergeEditor
-                key={canvas.sessionId}
                 value={canvas.aiState}
                 readOnly={canvas.running}
               />

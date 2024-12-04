@@ -15,6 +15,33 @@ interface Props {
   readOnly?: boolean;
 }
 
+export function createYamlConflict(
+  yaml: string,
+  oldStr: string,
+  newStr: string
+) {
+  const startIndex = yaml.indexOf(oldStr);
+  if (startIndex === -1) return yaml;
+
+  // Find start of the line containing oldStr
+  let lineStart = startIndex;
+  while (lineStart > 0 && yaml[lineStart - 1] !== '\n') {
+    lineStart--;
+  }
+
+  const endIndex = startIndex + oldStr.length;
+  const before = yaml.substring(0, lineStart);
+  const after = yaml.substring(endIndex);
+  const indentation = yaml.substring(lineStart, startIndex);
+
+  const conflict = `${before}<<<<<<< Current
+${indentation}${oldStr}
+=======
+${indentation}${newStr}
+>>>>>>> AI suggestion${after}`;
+  return conflict;
+}
+
 // Add blank lines before conflicts
 const addBlankLines = (text: string) => {
   const lines = text.split('\n');
@@ -32,7 +59,7 @@ const addBlankLines = (text: string) => {
   return newLines.join('\n');
 };
 
-interface Conflict {
+interface IConflict {
   marker: 'start' | 'middle';
   current: string[];
   incoming: string[];
@@ -44,10 +71,10 @@ interface Conflict {
   hasBlankLineBefore: boolean;
 }
 
-export const parseConflicts = (text: string): Conflict[] => {
+export const parseConflicts = (text: string): IConflict[] => {
   const lines = text.split('\n');
-  const conflicts: Conflict[] = [];
-  let currentConflict: Conflict | null = null;
+  const conflicts: IConflict[] = [];
+  let currentConflict: IConflict | null = null;
 
   lines.forEach((line, index) => {
     if (line.startsWith(START)) {
@@ -94,25 +121,6 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
 
   const conflictedText = useMemo(() => addBlankLines(value), [value]);
 
-  // const conflictedText = addBlankLines(`
-  // function greeting() {
-  // <<<<<<< HEAD
-  // console.log("Hello");
-  // return 'Hello World!';
-  // =======
-  // console.log("Hi");
-  // return 'Hi there!';
-  // >>>>>>> feature-branch
-  // }
-  // function farewell() {
-  // <<<<<<< HEAD
-  // return 'Goodbye!';
-  // =======
-  // return 'See you later!';
-  // >>>>>>> feature-branch
-  // }
-  // `.trim());
-
   const clearAllWidgets = (editor: editor.IStandaloneCodeEditor) => {
     // Remove all existing content widgets
     if (widgetsRef.current.length > 0) {
@@ -125,7 +133,7 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
 
   const addConflictDecorations = (
     editor: editor.IStandaloneCodeEditor,
-    conflicts: Conflict[]
+    conflicts: IConflict[]
   ) => {
     // Clear existing decorations and widgets
     if (decorationsRef.current) {
@@ -187,16 +195,16 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
       const widgetId = `conflict-actions-${idx}`;
       const actionsContainer = document.createElement('div');
       actionsContainer.className =
-        'conflict-actions absolute left-0 z-10 !flex gap-4 text-muted-foreground h-4 w-fit';
+        'conflict-actions absolute left-0 z-10 !flex gap-4 text-muted-foreground h-5 w-fit';
 
       const acceptCurrentBtn = document.createElement('div');
-      acceptCurrentBtn.className = `action-button h-4 accept-current text-xs cursor-pointer whitespace-nowrap ${buttonHover}`;
+      acceptCurrentBtn.className = `action-button h-5 accept-current text-sm cursor-pointer whitespace-nowrap ${buttonHover}`;
       acceptCurrentBtn.textContent = 'Accept Current';
       acceptCurrentBtn.onclick = () => handleAcceptCurrent(conflict, editor);
 
       const acceptIncomingBtn = document.createElement('div');
-      acceptIncomingBtn.className = `action-button h-4 accept-incoming text-xs cursor-pointer whitespace-nowrap ${buttonHover}`;
-      acceptIncomingBtn.textContent = 'Accept Incoming';
+      acceptIncomingBtn.className = `action-button h-5 accept-incoming text-sm cursor-pointer whitespace-nowrap ${buttonHover}`;
+      acceptIncomingBtn.textContent = 'Accept AI';
       acceptIncomingBtn.onclick = () => handleAcceptIncoming(conflict, editor);
 
       actionsContainer.appendChild(acceptCurrentBtn);
@@ -219,13 +227,15 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
       editor.addContentWidget(contentWidget);
     });
 
+    // TODO: scroll to first
+
     // @ts-expect-error monaco
     decorationsRef.current = editor.createDecorationsCollection(decorations);
   };
 
   const makeEdit = (
     editor: editor.IStandaloneCodeEditor,
-    conflict: Conflict,
+    conflict: IConflict,
     newLines: string[]
   ) => {
     const model = editor.getModel();
@@ -267,7 +277,7 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
   };
 
   const handleAcceptCurrent = (
-    conflict: Conflict,
+    conflict: IConflict,
     editor: editor.IStandaloneCodeEditor
   ) => {
     if (!editor) return;
@@ -275,7 +285,7 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
   };
 
   const handleAcceptIncoming = (
-    conflict: Conflict,
+    conflict: IConflict,
     editor: editor.IStandaloneCodeEditor
   ) => {
     if (!editor) return;
@@ -291,6 +301,25 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
     };
   }, []);
 
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const conflicedText = addBlankLines(value);
+    const forceRender = editor.getValue() !== conflicedText;
+
+    if (!forceRender) return;
+
+    const conflicts = parseConflicts(conflictedText);
+
+    if (conflicts) {
+      editor.setValue(conflictedText);
+    } else {
+      const position = editor.getPosition();
+      editor.setValue(conflictedText);
+      if (position) editor.setPosition(position);
+    }
+  }, [value]);
+
   return (
     <div
       className={cn(
@@ -302,12 +331,10 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
         height="100%"
         width="100%"
         loading={null}
-        language="json"
+        language="yaml"
         defaultValue={conflictedText}
         onMount={(editor) => {
           editorRef.current = editor;
-          const conflicts = parseConflicts(conflictedText);
-          addConflictDecorations(editor, conflicts);
         }}
         onChange={(newText) => {
           if (!editorRef.current) return;
@@ -319,6 +346,7 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
           readOnly,
           fontFamily: 'inter, monospace, sans-serif',
           fontSize: 15,
+          lineHeight: 24,
           wordWrap: 'on',
           unicodeHighlight: {
             ambiguousCharacters: false,
@@ -338,7 +366,8 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
           scrollbar: {
             useShadows: false,
             alwaysConsumeMouseWheel: false
-          }
+          },
+          renderWhitespace: 'boundary'
         }}
       />
     </div>

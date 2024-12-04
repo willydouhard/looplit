@@ -3,6 +3,7 @@ import CanvasChatHeader from './Header';
 import CanvasChatInput from './Input';
 
 export default function CanvasChat() {
+  // TODO: submit
   const submit = (content: string, context?: string) => {};
 
   return (

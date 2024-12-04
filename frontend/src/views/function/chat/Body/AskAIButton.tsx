@@ -24,13 +24,12 @@ interface Props {
 }
 
 export default function AskAIButton({ index }: Props) {
-  const { currentStateIndex } = useContext(FunctionViewContext);
   const isRunning = useRecoilValue(runningState);
   const editState = useCurrentEditState();
   const currentState = useCurrentState();
   const [open, setOpen] = useState(false);
 
-  if (!currentState || currentStateIndex < 1) return null;
+  if (!currentState) return null;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

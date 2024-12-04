@@ -25,6 +25,7 @@ from looplit.context import init_context
 from looplit.decorators import STATEFUL_FUNCS
 from looplit.logger import logger
 from looplit.session import Session
+from looplit.canvas import canvas_agent, State, tool_defs, SYSTEM_PROMPT
 
 BACKEND_ROOT = os.path.dirname(os.path.dirname(__file__))
 PACKAGE_ROOT = os.path.dirname(os.path.dirname(BACKEND_ROOT))
@@ -295,6 +296,40 @@ def run(target, host, port):
             await task
         else:
             func(input_state)
+
+    class AiCanvasRequest(TypedDict):
+        chat_id: str
+        context: str
+        message: str
+        state: str
+
+    @sio.on("call_canvas_agent")
+    async def call_canvas_agent(sid, payload: AiCanvasRequest):
+        context = init_context(sid)
+        chat_id = payload["chat_id"]
+        if not chat_id in context.session.chats:
+            messages = [
+                {"role": "system", "content": SYSTEM_PROMPT.format(reasoning=payload["state"], flagged=payload["context"])},
+                {"role": "user", "content": payload["message"]}
+                ]
+            context.session.chats[chat_id] = State(messages=messages, tools=tool_defs)
+        else:
+            last_state = context.session.chats[chat_id]
+            message_content = f"""<revised-reasoning>
+{payload["state"]}
+</revised-reasoning>
+
+{payload["message"]}"""
+            last_state.messages.append({"role": "user", "content": message_content})
+
+        try:
+            await context.session.canvas_agent_start()
+            context.session.chats[chat_id] = await canvas_agent(context.session.chats[chat_id])
+            await context.session.canvas_agent_end(response=context.session.chats[chat_id].messages[-1].model_dump())
+        except Exception as e:
+            logger.error("Failed to run canvas agent: " + str(e))
+            await context.session.canvas_agent_end(error=str(e))
+
 
     # Start the server
     async def start():

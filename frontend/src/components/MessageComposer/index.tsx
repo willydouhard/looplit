@@ -12,7 +12,6 @@ import {
 } from '@/state';
 import FunctionViewContext from '@/views/function/context';
 import {
-  RefObject,
   useCallback,
   useContext,
   useEffect,
@@ -23,11 +22,7 @@ import {
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { v4 as uuidv4 } from 'uuid';
 
-interface Props {
-  composerPlaceholderRef: RefObject<HTMLDivElement>;
-}
-
-export default function MessageComposer({ composerPlaceholderRef }: Props) {
+export default function MessageComposer() {
   const ref = useRef<HTMLDivElement>(null);
   const editState = useCurrentEditState();
   const running = useRecoilValue(runningState);
@@ -121,18 +116,6 @@ export default function MessageComposer({ composerPlaceholderRef }: Props) {
     };
   }, [addMessage]);
 
-  useEffect(
-    function resizeComposerPlaceholder() {
-      setTimeout(() => {
-        if (!ref.current || !composerPlaceholderRef.current) return;
-
-        const composerHeight = ref.current.getBoundingClientRect().height;
-        composerPlaceholderRef.current.style.paddingTop = `${composerHeight}px`;
-      }, 0);
-    },
-    [composer]
-  );
-
   const addMessageButton = (
     <Button
       data-testid="add-message-tabs"
@@ -154,10 +137,7 @@ export default function MessageComposer({ composerPlaceholderRef }: Props) {
   }, [addMessage]);
 
   return (
-    <div
-      ref={ref}
-      className="absolute bottom-0 left-0 right-0 backdrop-blur-2xl flex flex-col gap-1 border-t border-b px-4 py-2"
-    >
+    <div ref={ref} className="flex flex-col gap-1 border-t border-b px-4 py-2">
       <Message
         autoFocus
         message={composer}

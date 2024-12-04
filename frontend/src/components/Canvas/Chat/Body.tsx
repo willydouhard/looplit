@@ -1,10 +1,19 @@
 import CanvasChatAssistantMessage from './AssistantMessage';
 import CanvasChatUserMessage from './UserMessage';
 import { canvasState } from '@/state';
+import { useEffect } from 'react';
 import { useRecoilValue } from 'recoil';
+import { toast } from 'sonner';
 
 export default function CanvasChatBody() {
   const canvas = useRecoilValue(canvasState);
+
+  useEffect(() => {
+    if (canvas?.error) {
+      toast.error('Failed to run agent: ' + canvas.error);
+    }
+  }, [canvas?.error]);
+
   if (!canvas) return null;
 
   return (
@@ -13,14 +22,14 @@ export default function CanvasChatBody() {
         if (m.role === 'user') {
           return (
             <CanvasChatUserMessage
-              key={canvas.sessionId + i}
+              key={canvas.chatId + i}
               content={m.content}
             />
           );
         } else if (m.role === 'assistant') {
           return (
             <CanvasChatAssistantMessage
-              key={canvas.sessionId + i}
+              key={canvas.chatId + i}
               content={m.content}
             />
           );

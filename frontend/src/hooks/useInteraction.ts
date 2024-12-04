@@ -8,6 +8,13 @@ export interface ICallStatefulFunctionPayload {
   state: ILooplitState;
 }
 
+export interface ICallCanvasAgentPayload {
+  chat_id: string;
+  context: string;
+  message: string;
+  state: string;
+}
+
 export default function useInteraction() {
   const session = useRecoilValue(sessionState);
   const setError = useSetRecoilState(errorState);
@@ -27,8 +34,16 @@ export default function useInteraction() {
     [session?.socket, setError]
   );
 
+  const callCanvasAgent = useCallback(
+    (payload: ICallCanvasAgentPayload) => {
+      session?.socket.emit('call_canvas_agent', payload);
+    },
+    [session?.socket]
+  );
+
   return {
     setInterrupt,
-    callStatefulFunction
+    callStatefulFunction,
+    callCanvasAgent
   };
 }

@@ -53,18 +53,10 @@ const AutoResizeTextarea = ({
   useEffect(() => {
     const textarea = textareaRef.current;
     if (!textarea || !maxHeight) return;
-
-    const adjustHeight = () => {
-      textarea.style.height = 'auto';
-      const newHeight = Math.min(textarea.scrollHeight, maxHeight);
-      textarea.style.height = `${newHeight}px`;
-    };
-
-    textarea.addEventListener('input', adjustHeight);
-    adjustHeight(); // Initial adjustment
-
-    return () => textarea.removeEventListener('input', adjustHeight);
-  }, [maxHeight]);
+    textarea.style.height = 'auto';
+    const newHeight = Math.min(textarea.scrollHeight, maxHeight);
+    textarea.style.height = `${newHeight}px`;
+  }, [props.value]);
 
   return (
     <Textarea

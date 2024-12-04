@@ -5,6 +5,7 @@ import { ArrowRight, Check, X } from 'lucide-react';
 import { useRecoilState } from 'recoil';
 
 export default function CanvasHeader() {
+  // TODO: buttons
   const [canvas, setCanvas] = useRecoilState(canvasState);
 
   if (!canvas) return null;
@@ -18,6 +19,7 @@ export default function CanvasHeader() {
           variant="ghost"
           size="icon"
           className="-ml-2.5"
+          disabled={canvas.running}
           onClick={() => setCanvas(undefined)}
         >
           <X className="!size-6" />
@@ -27,15 +29,18 @@ export default function CanvasHeader() {
       <div className="flex items-center gap-4">
         {hasConflict ? (
           <>
-            <Button variant="destructive">
+            <Button disabled={canvas.running} variant="destructive">
               <X /> Reject All
             </Button>
-            <Button>
+            <Button disabled={canvas.running}>
               <Check /> Accept All
             </Button>
           </>
         ) : (
-          <Button onClick={() => setCanvas(undefined)}>
+          <Button
+            disabled={canvas.running}
+            onClick={() => setCanvas(undefined)}
+          >
             Continue <ArrowRight />
           </Button>
         )}

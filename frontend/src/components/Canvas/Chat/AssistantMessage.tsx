@@ -7,8 +7,8 @@ interface Props {
 
 export default function CanvasChatAssistantMessage({ content }: Props) {
   return (
-    <div className="flex gap-4">
-      <Logo className="w-4" />
+    <div className="flex gap-4 items-start">
+      <Logo className="w-5 mt-1.5" />
       <div>
         <Markdown>{content}</Markdown>
       </div>

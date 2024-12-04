@@ -82,8 +82,9 @@ export const errorState = atom<IError | undefined>({
 });
 
 export interface ICanvasState {
-  sessionId: string;
+  chatId: string;
   running: boolean;
+  error?: string;
   messages: { role: string; content: string }[];
   context: string;
   lineageId: string;
@@ -94,4 +95,24 @@ export interface ICanvasState {
 export const canvasState = atom<ICanvasState | undefined>({
   key: 'Canvas',
   default: undefined
+});
+
+export type EditorFormat = 'json' | 'yaml';
+
+export const editorFormatState = atom<EditorFormat>({
+  key: 'editorFormatState',
+  default: (() => {
+    if (typeof window === 'undefined') return 'json';
+
+    try {
+      const stored = localStorage.getItem('editor-format-preference');
+      if (stored === 'json' || stored === 'yaml') {
+        return stored;
+      }
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
+    }
+
+    return 'json';
+  })()
 });

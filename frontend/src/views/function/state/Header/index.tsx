@@ -2,6 +2,7 @@ import FunctionViewContext from '../../context';
 import LineageNav from './LineageNav';
 import SaveButton from './SaveButton';
 import UploadButton from './UploadButton';
+import { EditorFormatSelect } from '@/components/EditorFormat';
 import { useContext } from 'react';
 
 export default function StateHeader() {
@@ -14,6 +15,7 @@ export default function StateHeader() {
       </div>
       {isRoot ? (
         <div className="items-center flex gap-1">
+          <EditorFormatSelect />
           <SaveButton />
           <UploadButton />
         </div>
