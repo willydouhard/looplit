@@ -65,7 +65,7 @@ export const defaultOptions = {
   lineNumbersMinChars: 0,
   glyphMargin: false,
   lineNumbers: 'off' as const,
-  folding: false,
+  folding: true,
   scrollbar: {
     useShadows: false,
     alwaysConsumeMouseWheel: false
