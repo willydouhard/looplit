@@ -12,7 +12,7 @@ import { NavLink } from 'react-router-dom';
 export default function ChatHeader() {
   const { isRoot } = useContext(FunctionViewContext);
   return (
-    <div className="absolute top-0 left-0 right-0 z-10 backdrop-blur-md border-b h-14 p-4 flex items-center justify-between">
+    <div className="border-b h-14 p-4 flex items-center justify-between">
       <div className="flex items-center gap-1">
         {isRoot ? (
           <>

@@ -19,7 +19,6 @@ export default function RunStateButton() {
   } else if (interrupt) {
     return (
       <div className="flex items-center gap-1">
-        {' '}
         <Button
           variant="ghost"
           size="icon"

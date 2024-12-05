@@ -46,7 +46,6 @@ export function MessageContent({
         onPasteImage={addImage}
         disabled={!onChange}
         onChange={(e) => onChange?.(e.target.value)}
-        className="resize-none border-none bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
         placeholder={placeholder}
       />
     );
@@ -74,7 +73,6 @@ export function MessageContent({
                       })
                     )
                   }
-                  className="resize-none border-none bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                   placeholder={placeholder}
                 />
                 {i !== 0 ? (

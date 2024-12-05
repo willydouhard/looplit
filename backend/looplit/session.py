@@ -36,6 +36,7 @@ class FuncCall(TypedDict):
 class Session:
     current_tasks: List[asyncio.Task]
     call_stack: List[FuncCall]
+    chats: dict[str, State]
     initial_lineage_id: Optional[str] = None
     interrupt: bool = False
 
@@ -50,6 +51,7 @@ class Session:
         self.id = str(uuid.uuid4())
         self.current_tasks = []
         self.call_stack = []
+        self.chats = {}
         self.socket_id = socket_id
         self.emit_call = emit_call
         self.emit = emit
@@ -128,6 +130,14 @@ class Session:
                 if tc and lid:
                     await self.emit("map_tc_to_lid", {"tc": tc, "lid": lid})
 
+    async def canvas_agent_start(self):
+        await self.emit("canvas_agent_start", {})
+
+    async def canvas_agent_end(self, response=None, error=None):
+        await self.emit("canvas_agent_end", {"response": response, "error": error})
+        
+    async def send_state_edit(self, old_str: str, new_str: str):
+        await self.emit("state_edit", {"old_str": old_str, "new_str": new_str})
 
 sessions_sid: Dict[str, Session] = {}
 sessions_id: Dict[str, Session] = {}

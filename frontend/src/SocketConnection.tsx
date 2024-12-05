@@ -1,7 +1,9 @@
+import { createYamlConflict } from './components/StateMergeEditor';
 import {
   IError,
   IInterrupt,
   ILooplitState,
+  canvasState,
   errorState,
   functionsState,
   interruptState,
@@ -18,6 +20,7 @@ import { toast } from 'sonner';
 export default function SocketConnection() {
   const setSession = useSetRecoilState(sessionState);
   const setError = useSetRecoilState(errorState);
+  const setCanvas = useSetRecoilState(canvasState);
   const setFunctions = useSetRecoilState(functionsState);
   const setInterrupt = useSetRecoilState(interruptState);
   const setRunning = useSetRecoilState(runningState);
@@ -111,6 +114,51 @@ export default function SocketConnection() {
     socket.on('code_change', (target: string) => {
       toast.info(`${target} updated!`);
     });
+
+    socket.on('canvas_agent_start', () => {
+      setCanvas((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          error: undefined,
+          running: true
+        };
+      });
+    });
+
+    socket.on(
+      'canvas_agent_end',
+      ({
+        error,
+        response
+      }: {
+        error?: string;
+        response?: { role: string; content: string };
+      }) => {
+        setCanvas((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            error,
+            messages: response ? [...prev.messages, response] : prev.messages,
+            running: false
+          };
+        });
+      }
+    );
+
+    socket.on(
+      'state_edit',
+      ({ old_str, new_str }: { old_str: string; new_str: string }) => {
+        setCanvas((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            aiState: createYamlConflict(prev.aiState, old_str, new_str)
+          };
+        });
+      }
+    );
   }, [setSession]);
 
   useEffect(() => {

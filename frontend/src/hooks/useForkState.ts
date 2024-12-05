@@ -22,10 +22,8 @@ export const useForkState = () => {
   return useRecoilCallback(
     ({ set }) =>
       async (state: ILooplitState, messageIndex: number) => {
-        // Generate new lineage ID
         const newLineageId = uuidv4();
 
-        // Create new state with parent reference
         const newState: ILooplitState = {
           ...state,
           id: newLineageId
@@ -39,22 +37,33 @@ export const useForkState = () => {
 
         // Update forks tracking
         set(forksByMessageIndexState, (prevForks) => {
+          // Create a deep copy of the previous forks
           const updatedForks = { ...prevForks };
 
+          // Initialize the function ID array if it doesn't exist
           if (!updatedForks[id]) {
             updatedForks[id] = [];
           }
 
-          // Initialize fork array for specific message index if it doesn't exist
-          if (!updatedForks[id][messageIndex]) {
-            updatedForks[id][messageIndex] = [currentLineageId];
-          }
+          // Create a new array for the message index if it doesn't exist
+          // or create a copy of the existing array
+          const messageIndexForks = updatedForks[id][messageIndex]
+            ? [...updatedForks[id][messageIndex]]
+            : [currentLineageId];
 
-          // Add new fork to the array
-          updatedForks[id][messageIndex] = [
-            ...updatedForks[id][messageIndex],
+          // Create a new array with all indices up to messageIndex
+          const newMessageIndexArray = [
+            ...updatedForks[id].slice(0, messageIndex)
+          ];
+
+          // Add the updated forks array at messageIndex
+          newMessageIndexArray[messageIndex] = [
+            ...messageIndexForks,
             newLineageId
           ];
+
+          // Update the function ID array with the new message index array
+          updatedForks[id] = newMessageIndexArray;
 
           return updatedForks;
         });

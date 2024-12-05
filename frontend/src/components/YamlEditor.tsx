@@ -1,6 +1,8 @@
 import { useMonacoTheme } from './ThemeProvider';
+import { cn } from '@/lib/utils';
 import Editor from '@monaco-editor/react';
-import type { editor } from 'monaco-editor';
+import { load as yamlParse, dump as yamlStringify } from 'js-yaml';
+import { type editor } from 'monaco-editor';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -10,6 +12,37 @@ interface Props {
   fitContent?: boolean;
   className?: string;
   onChange?: (value: Record<string, unknown>) => void;
+}
+
+// This is a hack to make all strings multi-line strings.
+function convertToMultiline(obj: any): any {
+  if (typeof obj === 'string' && !obj.includes('\n')) {
+    return `${obj}\n`;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(convertToMultiline);
+  }
+  if (obj && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj).map(([k, v]) => [k, convertToMultiline(v)])
+    );
+  }
+  return obj;
+}
+
+function cleanupMultiline(obj: any): any {
+  if (typeof obj === 'string') {
+    return obj.replace(/\n$/, '');
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(cleanupMultiline);
+  }
+  if (obj && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj).map(([k, v]) => [k, cleanupMultiline(v)])
+    );
+  }
+  return obj;
 }
 
 export const defaultOptions = {
@@ -39,15 +72,15 @@ export const defaultOptions = {
   }
 };
 
-export default function JsonEditor({
+export default function YamlEditor({
   value,
   className,
   height,
   fitContent,
   onChange
 }: Props) {
-  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const preventNextOnChange = useRef(false);
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const theme = useMonacoTheme();
   const [error, setError] = useState<string>();
 
@@ -62,43 +95,46 @@ export default function JsonEditor({
 
   function adjustEditorHeightToContent() {
     const editor = editorRef.current;
+    if (!editor) return;
 
-    if (!editor) {
-      return;
-    }
+    const editorElement = editor.getDomNode();
+    if (!editorElement) return;
 
-    const editorElement = editor.getDomNode(); // Get the editor DOM node
-    if (!editorElement) {
-      return;
-    }
-
-    // Use the scrollHeight to get the total content height including word-wrapped lines
     const contentHeight = editor.getContentHeight();
-
     const editorHeight = contentHeight + 6;
-
     const maxHeight = 500;
 
-    editorElement.style.height = `${Math.min(maxHeight, editorHeight)}px`; // Adjust editor container height
-    editor.layout(); // Update editor layout
+    editorElement.style.height = `${Math.min(maxHeight, editorHeight)}px`;
+    editor.layout();
   }
 
-  const jsonString = JSON.stringify(value, undefined, 2);
+  // Convert JSON to YAML string for initial display with proper multiline handling
+  const yamlString = yamlStringify(convertToMultiline(value), {
+    indent: 2,
+    lineWidth: -1,
+    noRefs: true,
+    flowLevel: -1,
+    skipInvalid: true,
+    noCompatMode: true,
+    styles: {
+      '!!str': 'literal' // Use literal style (|) for multiline strings
+    }
+  });
 
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor) return;
-    const forceRender = editor.getValue() !== jsonString;
+    const forceRender = editor.getValue() !== yamlString;
     if (forceRender) {
       const position = editor.getPosition();
       preventNextOnChange.current = true;
-      editor.setValue(jsonString);
+      editor.setValue(yamlString);
       if (position) editor.setPosition(position);
     }
-  }, [jsonString]);
+  }, [yamlString]);
 
   return (
-    <div className={className}>
+    <div className={cn(className, 'relative')}>
       <Editor
         loading={null}
         width="100%"
@@ -108,21 +144,26 @@ export default function JsonEditor({
           ...defaultOptions,
           readOnly: !onChange
         }}
-        defaultValue={jsonString}
+        defaultValue={yamlString}
         onChange={(value) => {
           if (preventNextOnChange.current) {
             preventNextOnChange.current = false;
             return;
           }
+          if (!value) return;
+
           try {
             setError(undefined);
-            const jsonValue = JSON.parse(value || '');
-            onChange?.(jsonValue);
+            // Parse YAML with more lenient options
+            const jsonValue = yamlParse(value, {}) as Record<string, unknown>;
+            const cleanedValue = cleanupMultiline(jsonValue);
+
+            onChange?.(cleanedValue);
           } catch (err) {
             setError(String(err));
           }
         }}
-        language="json"
+        language="yaml"
         onMount={(editor) => {
           editorRef.current = editor;
 

@@ -2,6 +2,12 @@ import ImageDialog from '../ImageDialog';
 import { Button } from '../ui/button';
 import { MessageContent } from './Content';
 import RoleSelect from './RoleSelect';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
 import { ListPlusIcon, Trash2 } from 'lucide-react';
 import { useCallback } from 'react';
 
@@ -119,27 +125,36 @@ export default function Message({
         </div>
 
         {onChange ? (
-          <div className="flex -mr-2">
-            <Button
-              className="text-muted-foreground"
-              onClick={addText}
-              variant="ghost"
-              size="icon"
-            >
-              <ListPlusIcon size={14} />
-            </Button>
-            <ImageDialog onAddImage={addImage} />
-            {onDelete ? (
-              <Button
-                className="text-muted-foreground"
-                onClick={onDelete}
-                variant="ghost"
-                size="icon"
-              >
-                <Trash2 size={14} />
-              </Button>
-            ) : null}
-          </div>
+          <TooltipProvider delayDuration={100}>
+            <div className="flex -mr-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    className="text-muted-foreground"
+                    onClick={addText}
+                    variant="ghost"
+                    size="icon"
+                  >
+                    <ListPlusIcon size={14} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Add Text Block</p>
+                </TooltipContent>
+              </Tooltip>
+              <ImageDialog onAddImage={addImage} />
+              {onDelete ? (
+                <Button
+                  className="text-muted-foreground"
+                  onClick={onDelete}
+                  variant="ghost"
+                  size="icon"
+                >
+                  <Trash2 size={14} />
+                </Button>
+              ) : null}
+            </div>
+          </TooltipProvider>
         ) : null}
       </div>
       <MessageContent

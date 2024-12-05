@@ -6,6 +6,7 @@ from typing import Callable, TypedDict, get_type_hints
 from uuid import uuid4
 
 from pydantic import create_model
+from pydantic.fields import FieldInfo
 
 from looplit.context import context
 from looplit.logger import logger
@@ -95,12 +96,12 @@ def stateful(init_state: State):
                 if inspect.iscoroutine(result):
                     result = await result
 
-                if is_root_call:
-                    await context.session.send_output_state(
-                        func_name=function.__name__,
-                        lineage_id=lineage_id,
-                        state=result.copy(deep=True),
-                    )
+                
+                await context.session.send_output_state(
+                    func_name=function.__name__,
+                    lineage_id=lineage_id,
+                    state=result.copy(deep=True),
+                )
 
                 return result
             except CancelledError:
@@ -128,17 +129,23 @@ def stateful(init_state: State):
 
 
 def tool(func: Callable) -> Callable:
-    # Extract function annotations
     annotations = get_type_hints(func)
     return_type = annotations.pop("return", None)
+    
+    # Extract parameter descriptions from function signature
+    params = {}
+    for name, param in inspect.signature(func).parameters.items():
+        default = param.default if param.default != inspect.Parameter.empty else ...
+        if isinstance(default, FieldInfo):
+            params[name] = (param.annotation, default) # type: ignore
+        else:
+            params[name] = (param.annotation, default) # type: ignore
 
-    # Create a Pydantic model for the function's parameters
     ParamModel = create_model(
         f"{func.__name__}_params",
-        **{name: (typ, ...) for name, typ in annotations.items()},
-    )  # type: ignore
+        **params,
+    )
 
-    # Generate the OpenAI schema
     openai_schema = {
         "type": "function",
         "function": {
@@ -148,15 +155,13 @@ def tool(func: Callable) -> Callable:
         },
     }
 
-    # Generate the Anthropic schema
     anthropic_schema = {
         "name": func.__name__,
         "description": func.__doc__,
         "input_schema": ParamModel.model_json_schema(),
     }
 
-    # Attach schema and model to the wrapper function for later use
-    func.openai_schema = openai_schema  # type: ignore
-    func.anthropic_schema = anthropic_schema  # type: ignore
+    func.openai_schema = openai_schema # type: ignore
+    func.anthropic_schema = anthropic_schema # type: ignore
 
     return func

@@ -47,6 +47,15 @@ export const functionsState = atom<Record<string, ILooplitState> | undefined>({
   default: undefined
 });
 
+export const aiEditSuggestionState = atom<ILooplitState | undefined>({
+  key: 'AiEditSuggestion',
+  default: {
+    id: 'fef',
+    messages: [],
+    tools: []
+  }
+});
+
 export interface IInterrupt {
   callback: () => void;
   func_name: string;
@@ -70,4 +79,43 @@ export interface IError {
 export const errorState = atom<IError | undefined>({
   key: 'Error',
   default: undefined
+});
+
+export interface ICanvasState {
+  chatId: string;
+  running: boolean;
+  error?: string;
+  acceptAll?: () => void;
+  rejectAll?: () => void;
+  messages: { role: string; content: string }[];
+  context: string;
+  lineageId: string;
+  openCoords: { x: number; y: number };
+  aiState: string;
+  origState: string;
+}
+
+export const canvasState = atom<ICanvasState | undefined>({
+  key: 'Canvas',
+  default: undefined
+});
+
+export type EditorFormat = 'json' | 'yaml';
+
+export const editorFormatState = atom<EditorFormat>({
+  key: 'editorFormatState',
+  default: (() => {
+    if (typeof window === 'undefined') return 'json';
+
+    try {
+      const stored = localStorage.getItem('editor-format-preference');
+      if (stored === 'json' || stored === 'yaml') {
+        return stored;
+      }
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
+    }
+
+    return 'json';
+  })()
 });
