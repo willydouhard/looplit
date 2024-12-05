@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/select';
 import useCurrentEditState from '@/hooks/useCurrentEditState';
 import { editorFormatState } from '@/state';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
 
 const STORAGE_KEY = 'editor-format-preference';
