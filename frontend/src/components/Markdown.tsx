@@ -48,7 +48,6 @@ const MarkdownCodeEditor = ({
   }
 
   return (
-    <Card>
       <Editor
         height={height}
         defaultValue={code}
@@ -56,7 +55,9 @@ const MarkdownCodeEditor = ({
         theme={theme}
         options={{
           fontFamily: 'inter, monospace, sans-serif',
+          renderLineHighlight: "none",
           fontSize: 12,
+          lineNumbers: "off",
           minimap: { enabled: false },
           readOnly: true,
           lineNumbersMinChars: 0,
@@ -74,7 +75,6 @@ const MarkdownCodeEditor = ({
           adjustEditorHeightToContent();
         }}
       />
-    </Card>
   );
 };
 

@@ -40,13 +40,13 @@ async def update_tool_definition(
     old_str: str,
     new_str: str,
    ) -> str:
-    """Update a tool call definition in the agent reasoning `tools` field."""
+    """Update a tool call definition in the agent reasoning `tools` field. You cannot edit tool names."""
     try:
         context = get_context()
         await context.session.send_state_edit(old_str=old_str, new_str=new_str)
     except:
         pass
-    return "System prompt update suggested!"
+    return "Tool definition update suggested!"
 
 
 tool_defs = [

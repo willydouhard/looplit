@@ -20,7 +20,7 @@ export default function CanvasChat() {
   };
 
   return (
-    <div className="flex flex-col flex-grow">
+    <div className="flex flex-col h-full">
       <CanvasChatHeader />
       <CanvasChatBody />
       <CanvasChatInput onSubmit={submit} className="mt-auto" />

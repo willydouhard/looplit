@@ -96,12 +96,12 @@ def stateful(init_state: State):
                 if inspect.iscoroutine(result):
                     result = await result
 
-                if is_root_call:
-                    await context.session.send_output_state(
-                        func_name=function.__name__,
-                        lineage_id=lineage_id,
-                        state=result.copy(deep=True),
-                    )
+                
+                await context.session.send_output_state(
+                    func_name=function.__name__,
+                    lineage_id=lineage_id,
+                    state=result.copy(deep=True),
+                )
 
                 return result
             except CancelledError:
@@ -137,9 +137,9 @@ def tool(func: Callable) -> Callable:
     for name, param in inspect.signature(func).parameters.items():
         default = param.default if param.default != inspect.Parameter.empty else ...
         if isinstance(default, FieldInfo):
-            params[name] = (param.annotation, default)
+            params[name] = (param.annotation, default) # type: ignore
         else:
-            params[name] = (param.annotation, default)
+            params[name] = (param.annotation, default) # type: ignore
 
     ParamModel = create_model(
         f"{func.__name__}_params",
@@ -161,7 +161,7 @@ def tool(func: Callable) -> Callable:
         "input_schema": ParamModel.model_json_schema(),
     }
 
-    func.openai_schema = openai_schema
-    func.anthropic_schema = anthropic_schema
+    func.openai_schema = openai_schema # type: ignore
+    func.anthropic_schema = anthropic_schema # type: ignore
 
     return func

@@ -37,7 +37,7 @@ export function EditorFormatSelect() {
       value={format}
       onValueChange={setFormat as any}
     >
-      <SelectTrigger className="w-fit gap-1.5 h-7 px-2">
+      <SelectTrigger className="w-fit gap-1.5 h-7 px-2 border-none">
         <SelectValue placeholder="Select format">{format}</SelectValue>
       </SelectTrigger>
       <SelectContent>

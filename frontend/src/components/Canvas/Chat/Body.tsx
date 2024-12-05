@@ -11,7 +11,7 @@ export default function CanvasChatBody() {
   if (!canvas) return null;
 
   return (
-    <div className="flex flex-col gap-4 flex-grow px-6">
+    <div className="flex flex-col gap-4 flex-grow px-6 overflow-y-auto">
       {canvas?.messages.map((m, i) => {
         if (m.role === 'user') {
           return (

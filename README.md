@@ -107,9 +107,19 @@ The examples above demonstrate a common pattern involving a router Agent that ca
 1. The sub-agent is decorated with `@ll.stateful`.
 2. The tool call name follows the `call_{sub_agent_function_name}` convention.
 
+## 🖼️ Looplit Canvas
+
+Looplit make it easy to leverage LLMs to iterate on your system prompt/tool definitions:
+1. Click on the ✨ button below the faulty assistant/tool message
+2. Type a message describing the issue
+
+> **_Note:_** The implementation uses `gpt-4o`. All of the logic is located in the [canvas.py](/backend/looplit/canvas.py) file.
+
+This will open the canvas and suggest editions you can accept/reject (similarly to the conflict resolver UI of VsCode).
+
 ## 🛣️ What's Next?
 
-- [ ] AI enabled iteration/debugging
+- [x] AI enabled iteration/debugging
 - [ ] Voice Support
 
 ## 💡 Why is it Named Looplit?
