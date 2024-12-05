@@ -1,16 +1,32 @@
-import { parseConflicts } from '../StateMergeEditor';
 import { Button } from '../ui/button';
-import { canvasState } from '@/state';
+import { ILooplitState, canvasState, editStateState } from '@/state';
+import { load as yamlParse } from 'js-yaml';
 import { ArrowRight, Check, X } from 'lucide-react';
-import { useRecoilState } from 'recoil';
+import { useCallback } from 'react';
+import { useRecoilState, useSetRecoilState } from 'recoil';
+import { toast } from 'sonner';
 
 export default function CanvasHeader() {
-  // TODO: buttons
   const [canvas, setCanvas] = useRecoilState(canvasState);
+  const setEditState = useSetRecoilState(editStateState);
+
+  const onContinue = useCallback(() => {
+    if (!canvas) return;
+    try {
+      const state = yamlParse(canvas.aiState, {}) as ILooplitState;
+      setEditState((prev) => {
+        const next = { ...prev };
+        next[canvas.lineageId] = state;
+        return next;
+      });
+      setCanvas(undefined);
+      toast.info('Modifications applied to edit mode.');
+    } catch (err) {
+      toast.error('Failed to parse canvas state: ' + String(err));
+    }
+  }, [canvas, setEditState]);
 
   if (!canvas) return null;
-
-  const hasConflict = !!parseConflicts(canvas.aiState).length;
 
   return (
     <div className="flex h-[60px] items-center justify-between">
@@ -27,20 +43,21 @@ export default function CanvasHeader() {
         State Canvas
       </div>
       <div className="flex items-center gap-4">
-        {hasConflict ? (
+        {canvas.rejectAll && canvas.acceptAll ? (
           <>
-            <Button disabled={canvas.running} variant="destructive">
+            <Button
+              onClick={canvas.rejectAll}
+              disabled={canvas.running}
+              variant="destructive"
+            >
               <X /> Reject All
             </Button>
-            <Button disabled={canvas.running}>
+            <Button onClick={canvas.acceptAll} disabled={canvas.running}>
               <Check /> Accept All
             </Button>
           </>
         ) : (
-          <Button
-            disabled={canvas.running}
-            onClick={() => setCanvas(undefined)}
-          >
+          <Button disabled={canvas.running} onClick={onContinue}>
             Continue <ArrowRight />
           </Button>
         )}

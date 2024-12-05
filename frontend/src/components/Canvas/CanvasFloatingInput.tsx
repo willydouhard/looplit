@@ -29,22 +29,26 @@ export default function CanvasFloatingInput({
   const handleSubmit = useCallback(() => {
     if (!value || !ref.current) return;
     const rect = ref.current.getBoundingClientRect();
+
+    const state = yamlStringify(currentState, {
+      indent: 2,
+      lineWidth: -1,
+      noRefs: true,
+      flowLevel: -1,
+      skipInvalid: true,
+      noCompatMode: true,
+      styles: {
+        '!!str': 'literal' // Use literal style (|) for multiline strings
+      }
+    });
+
     const canvasState = {
       context: selectedText,
       chatId: uuidv4(),
       running: false,
       messages: [{ role: 'user', content: value }],
-      aiState: yamlStringify(currentState, {
-        indent: 2,
-        lineWidth: -1,
-        noRefs: true,
-        flowLevel: -1,
-        skipInvalid: true,
-        noCompatMode: true,
-        styles: {
-          '!!str': 'literal' // Use literal style (|) for multiline strings
-        }
-      }),
+      aiState: state,
+      origState: state,
       lineageId: currentLineageId,
       openCoords: {
         x: rect.x,

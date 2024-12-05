@@ -4,13 +4,12 @@ import CanvasHeader from './Header';
 import { canvasState } from '@/state';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect } from 'react';
-import { useRecoilState } from 'recoil';
+import { useRecoilValue } from 'recoil';
 
 let [x, y] = [0, 0];
 
 const CodeCanvas = () => {
-  // TODO: Accept/Reject logic
-  const [canvas, setCanvas] = useRecoilState(canvasState);
+  const canvas = useRecoilValue(canvasState);
 
   useEffect(() => {
     if (canvas) {

@@ -1,18 +1,12 @@
 import CanvasChatAssistantMessage from './AssistantMessage';
 import CanvasChatUserMessage from './UserMessage';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { canvasState } from '@/state';
-import { useEffect } from 'react';
+import { AlertCircle } from 'lucide-react';
 import { useRecoilValue } from 'recoil';
-import { toast } from 'sonner';
 
 export default function CanvasChatBody() {
   const canvas = useRecoilValue(canvasState);
-
-  useEffect(() => {
-    if (canvas?.error) {
-      toast.error('Failed to run agent: ' + canvas.error);
-    }
-  }, [canvas?.error]);
 
   if (!canvas) return null;
 
@@ -37,6 +31,13 @@ export default function CanvasChatBody() {
           return null;
         }
       })}
+      {canvas.error ? (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{canvas.error}</AlertDescription>
+        </Alert>
+      ) : null}
     </div>
   );
 }

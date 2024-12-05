@@ -8,7 +8,7 @@ import { useRecoilValue } from 'recoil';
 
 interface Props {
   className?: string;
-  onSubmit: (value: string) => void;
+  onSubmit: (message: string) => void;
 }
 
 export default function CanvasChatInput({ onSubmit, className }: Props) {
@@ -45,7 +45,7 @@ export default function CanvasChatInput({ onSubmit, className }: Props) {
 
   const submitButton = useMemo(() => {
     return (
-      <Button size="sm" disabled={disabled} onClick={() => submit()}>
+      <Button size="sm" disabled={disabled} onClick={submit}>
         Submit <Kbd>Cmd+Enter</Kbd>
       </Button>
     );

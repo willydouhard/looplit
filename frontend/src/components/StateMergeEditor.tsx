@@ -1,8 +1,10 @@
 import { useMonacoTheme } from './ThemeProvider';
 import { cn } from '@/lib/utils';
+import { canvasState } from '@/state';
 import Editor from '@monaco-editor/react';
 import { Position, Range, editor } from 'monaco-editor';
 import { useEffect, useMemo, useRef } from 'react';
+import { useSetRecoilState } from 'recoil';
 
 const ABOVE = editor.ContentWidgetPositionPreference.ABOVE;
 
@@ -111,6 +113,7 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const decorationsRef = useRef<editor.IModelDeltaDecoration[]>(null);
   const widgetsRef = useRef<editor.IContentWidget[]>([]);
+  const setCanvas = useSetRecoilState(canvasState);
   const theme = useMonacoTheme();
 
   const headerBg = theme === 'looplit-dark' ? 'bg-sky-800' : 'bg-sky-200';
@@ -227,10 +230,14 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
       editor.addContentWidget(contentWidget);
     });
 
-    // TODO: scroll to first
-
     // @ts-expect-error monaco
     decorationsRef.current = editor.createDecorationsCollection(decorations);
+
+    // Scroll to the last decoration if there are any decorations
+    if (decorations.length > 0) {
+      const lastDecoration = decorations[decorations.length - 1];
+      editor.revealLineInCenter(lastDecoration.range.startLineNumber);
+    }
   };
 
   const makeEdit = (
@@ -270,10 +277,6 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
 
     editor.setPosition(newPosition);
     editor.focus();
-
-    // Re-parse and decorate remaining conflicts
-    const remainingConflicts = parseConflicts(model.getValue());
-    addConflictDecorations(editor, remainingConflicts);
   };
 
   const handleAcceptCurrent = (
@@ -340,6 +343,34 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
           if (!editorRef.current) return;
           const remainingConflicts = parseConflicts(newText || '');
           addConflictDecorations(editorRef.current, remainingConflicts);
+          setCanvas((prev) => {
+            if (!prev) return prev;
+            const nextAiState = editorRef.current?.getValue() || '';
+            if (!remainingConflicts.length) {
+              return {
+                ...prev,
+                aiState: nextAiState,
+                acceptAll: undefined,
+                rejectAll: undefined
+              };
+            }
+            return {
+              ...prev,
+              aiState: nextAiState,
+              acceptAll: () =>
+                remainingConflicts.forEach(
+                  (c) =>
+                    editorRef.current &&
+                    handleAcceptIncoming(c, editorRef.current)
+                ),
+              rejectAll: () =>
+                remainingConflicts.forEach(
+                  (c) =>
+                    editorRef.current &&
+                    handleAcceptCurrent(c, editorRef.current)
+                )
+            };
+          });
         }}
         theme={theme}
         options={{

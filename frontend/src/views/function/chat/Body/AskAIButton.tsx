@@ -1,4 +1,3 @@
-import FunctionViewContext from '../../context';
 import CanvasFloatingInput from '@/components/Canvas/CanvasFloatingInput';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,7 +15,7 @@ import useCurrentEditState from '@/hooks/useCurrentEditState';
 import useCurrentState from '@/hooks/useCurrentState';
 import { runningState } from '@/state';
 import { SparklesIcon } from 'lucide-react';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { useRecoilValue } from 'recoil';
 
 interface Props {

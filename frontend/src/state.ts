@@ -85,11 +85,14 @@ export interface ICanvasState {
   chatId: string;
   running: boolean;
   error?: string;
+  acceptAll?: () => void;
+  rejectAll?: () => void;
   messages: { role: string; content: string }[];
   context: string;
   lineageId: string;
   openCoords: { x: number; y: number };
   aiState: string;
+  origState: string;
 }
 
 export const canvasState = atom<ICanvasState | undefined>({
