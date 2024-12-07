@@ -48,33 +48,33 @@ const MarkdownCodeEditor = ({
   }
 
   return (
-      <Editor
-        height={height}
-        defaultValue={code}
-        language={language}
-        theme={theme}
-        options={{
-          fontFamily: 'inter, monospace, sans-serif',
-          renderLineHighlight: "none",
-          fontSize: 12,
-          lineNumbers: "off",
-          minimap: { enabled: false },
-          readOnly: true,
-          lineNumbersMinChars: 0,
-          folding: false,
-          lineDecorationsWidth: 0,
-          overviewRulerLanes: 0,
-          scrollbar: {
-            useShadows: false,
-            alwaysConsumeMouseWheel: false
-          }
-        }}
-        onMount={(editor) => {
-          editorRef.current = editor;
+    <Editor
+      height={height}
+      defaultValue={code}
+      language={language}
+      theme={theme}
+      options={{
+        fontFamily: 'inter, monospace, sans-serif',
+        renderLineHighlight: 'none',
+        fontSize: 12,
+        lineNumbers: 'off',
+        minimap: { enabled: false },
+        readOnly: true,
+        lineNumbersMinChars: 0,
+        folding: false,
+        lineDecorationsWidth: 0,
+        overviewRulerLanes: 0,
+        scrollbar: {
+          useShadows: false,
+          alwaysConsumeMouseWheel: false
+        }
+      }}
+      onMount={(editor) => {
+        editorRef.current = editor;
 
-          adjustEditorHeightToContent();
-        }}
-      />
+        adjustEditorHeightToContent();
+      }}
+    />
   );
 };
 
