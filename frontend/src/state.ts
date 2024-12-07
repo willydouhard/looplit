@@ -15,7 +15,7 @@ export const sessionState = atom<ISession | undefined>({
 
 export interface ILooplitState {
   id: string;
-
+  metadata?: Record<string, any>;
   messages: IMessage[];
   tools: Record<string, any>[];
 }
@@ -32,13 +32,13 @@ export const toolCallsToLineageIdsState = atom<Record<string, string>>({
   default: {}
 });
 
-export const editStateState = atom<Record<string, ILooplitState>>({
-  key: 'editState',
+export const forksByMessageIndexState = atom<Record<string, string[][]>>({
+  key: 'forksByMessageIndex',
   default: {}
 });
 
-export const forksByMessageIndexState = atom<Record<string, string[][]>>({
-  key: 'forksByMessageIndex',
+export const editStateState = atom<Record<string, ILooplitState>>({
+  key: 'editState',
   default: {}
 });
 
@@ -116,6 +116,6 @@ export const editorFormatState = atom<EditorFormat>({
       console.error('Error reading from localStorage:', error);
     }
 
-    return 'json';
+    return 'yaml';
   })()
 });

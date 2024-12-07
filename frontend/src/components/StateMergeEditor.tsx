@@ -295,6 +295,43 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
     makeEdit(editor, conflict, conflict.incoming);
   };
 
+  const handleAcceptAllConflicts = (
+    editor: editor.IStandaloneCodeEditor,
+    conflicts: IConflict[],
+    useIncoming: boolean
+  ) => {
+    if (!editor) return;
+
+    // Sort conflicts in reverse order (bottom to top)
+    // This prevents position shifts from affecting subsequent resolutions
+    const sortedConflicts = [...conflicts].sort(
+      (a, b) => b.headerLine - a.headerLine
+    );
+
+    editor.pushUndoStop();
+
+    sortedConflicts.forEach((conflict) => {
+      const lines = useIncoming ? conflict.incoming : conflict.current;
+      const startLineNumber = conflict.hasBlankLineBefore
+        ? conflict.headerLine
+        : conflict.headerLine + 1;
+      const endLineNumber = conflict.footerLine + 2;
+      const range = new Range(startLineNumber, 1, endLineNumber, 1);
+      const newTextLines = lines.join('\n') + '\n';
+
+      editor.executeEdits('conflict-resolution', [
+        {
+          range: range,
+          text: newTextLines,
+          forceMoveMarkers: true
+        }
+      ]);
+    });
+
+    editor.pushUndoStop();
+    editor.focus();
+  };
+
   // Clean up widgets when component unmounts
   useEffect(() => {
     return () => {
@@ -358,16 +395,16 @@ const StateMergeEditor = ({ value, readOnly }: Props) => {
               ...prev,
               aiState: nextAiState,
               acceptAll: () =>
-                remainingConflicts.forEach(
-                  (c) =>
-                    editorRef.current &&
-                    handleAcceptIncoming(c, editorRef.current)
+                handleAcceptAllConflicts(
+                  editorRef.current!,
+                  remainingConflicts,
+                  true
                 ),
               rejectAll: () =>
-                remainingConflicts.forEach(
-                  (c) =>
-                    editorRef.current &&
-                    handleAcceptCurrent(c, editorRef.current)
+                handleAcceptAllConflicts(
+                  editorRef.current!,
+                  remainingConflicts,
+                  false
                 )
             };
           });

@@ -18,7 +18,7 @@ export default function StateBody() {
         }
         height="100%"
         className="h-full pt-2 px-1"
-        value={omit(currentState, 'id', 'messages')}
+        value={omit(currentState, 'id', 'messages', 'metadata')}
       />
     );
   } else {
@@ -29,7 +29,7 @@ export default function StateBody() {
         }
         height="100%"
         className="h-full pt-2 px-1"
-        value={omit(currentState, 'id', 'messages')}
+        value={omit(currentState, 'id', 'messages', 'metadata')}
       />
     );
   }

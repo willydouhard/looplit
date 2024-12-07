@@ -6,6 +6,7 @@ import useInteraction from '@/hooks/useInteraction';
 import { canvasState } from '@/state';
 import FunctionViewContext from '@/views/function/context';
 import { dump as yamlStringify } from 'js-yaml';
+import { omit } from 'lodash';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useSetRecoilState } from 'recoil';
 import { v4 as uuidv4 } from 'uuid';
@@ -30,7 +31,7 @@ export default function CanvasFloatingInput({
     if (!value || !ref.current) return;
     const rect = ref.current.getBoundingClientRect();
 
-    const state = yamlStringify(currentState, {
+    const state = yamlStringify(omit(currentState, 'id', 'metadata'), {
       indent: 2,
       lineWidth: -1,
       noRefs: true,

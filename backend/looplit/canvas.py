@@ -1,8 +1,9 @@
-import os
 import json
+import os
+
+from looplit.context import get_context
 from looplit.decorators import tool
 from looplit.state import State
-from looplit.context import get_context
 
 SYSTEM_PROMPT = """You are an AI assistant specialized in analyzing and debugging LLM agent outputs. Your purpose is to identify issues in agent reasoning and suggest improvements to prevent similar problems.
 
@@ -21,11 +22,12 @@ If possible, edit the instructions of the Agent. The goal is to change the instr
 Given those modifications, replaying the state should lead to the correct result.
 """
 
+
 @tool
 async def update_system_prompt(
     old_str: str,
     new_str: str,
-   ) -> str:
+) -> str:
     """Update the system message in the agent reasoning `messages` field."""
     try:
         context = get_context()
@@ -39,7 +41,7 @@ async def update_system_prompt(
 async def update_tool_definition(
     old_str: str,
     new_str: str,
-   ) -> str:
+) -> str:
     """Update a tool call definition in the agent reasoning `tools` field. You cannot edit tool names."""
     try:
         context = get_context()
@@ -50,16 +52,21 @@ async def update_tool_definition(
 
 
 tool_defs = [
-    update_system_prompt.openai_schema,
-    update_tool_definition.openai_schema,
+    update_system_prompt.openai_schema,  # type: ignore
+    update_tool_definition.openai_schema,  # type: ignore
 ]
+
 
 async def handle_tool_calls(state: State, tool_calls):
     for tool_call in tool_calls:
         if tool_call.function.name == "update_system_prompt":
-            result = await update_system_prompt(**json.loads(tool_call.function.arguments))
+            result = await update_system_prompt(
+                **json.loads(tool_call.function.arguments)
+            )
         elif tool_call.function.name == "update_tool_definition":
-            result = await update_tool_definition(**json.loads(tool_call.function.arguments))
+            result = await update_tool_definition(
+                **json.loads(tool_call.function.arguments)
+            )
         else:
             continue
 
@@ -67,15 +74,17 @@ async def handle_tool_calls(state: State, tool_calls):
             {"role": "tool", "content": result, "tool_call_id": tool_call.id}
         )
 
+
 async def canvas_agent(state: State) -> State:
     from openai import AsyncOpenAI
+
     client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     response = await client.chat.completions.create(
         model="gpt-4o",
         temperature=0,
         messages=state.messages,
-        tools=state.tools,
+        tools=state.tools,  # type: ignore
     )
     state.messages.append(response.choices[0].message)
     tool_calls = response.choices[0].message.tool_calls

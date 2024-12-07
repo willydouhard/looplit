@@ -2,6 +2,7 @@ import functools
 import inspect
 import os
 from asyncio import CancelledError
+from datetime import datetime
 from typing import Callable, TypedDict, get_type_hints
 from uuid import uuid4
 
@@ -91,12 +92,25 @@ def stateful(init_state: State):
                     FUNCS_TO_TOOL_CALLS, FUNCS_TO_LINEAGE_IDS
                 )
 
+                start = datetime.utcnow()
+
                 result = function(**params_values)
 
                 if inspect.iscoroutine(result):
                     result = await result
 
-                
+                end = datetime.utcnow()
+
+                if not result.metadata:
+                    result.metadata = {}
+
+                result.metadata["func_name"] = function.__name__
+                result.metadata["duration_ms"] = abs(
+                    (end - start).total_seconds() * 1000
+                )
+                result.metadata["start_time"] = start.isoformat() + "Z"
+                result.metadata["end_time"] = end.isoformat() + "Z"
+
                 await context.session.send_output_state(
                     func_name=function.__name__,
                     lineage_id=lineage_id,
@@ -131,19 +145,19 @@ def stateful(init_state: State):
 def tool(func: Callable) -> Callable:
     annotations = get_type_hints(func)
     return_type = annotations.pop("return", None)
-    
+
     # Extract parameter descriptions from function signature
     params = {}
     for name, param in inspect.signature(func).parameters.items():
         default = param.default if param.default != inspect.Parameter.empty else ...
         if isinstance(default, FieldInfo):
-            params[name] = (param.annotation, default) # type: ignore
+            params[name] = (param.annotation, default)  # type: ignore
         else:
-            params[name] = (param.annotation, default) # type: ignore
+            params[name] = (param.annotation, default)  # type: ignore
 
     ParamModel = create_model(
         f"{func.__name__}_params",
-        **params,
+        **params,  # type: ignore
     )
 
     openai_schema = {
@@ -161,7 +175,7 @@ def tool(func: Callable) -> Callable:
         "input_schema": ParamModel.model_json_schema(),
     }
 
-    func.openai_schema = openai_schema # type: ignore
-    func.anthropic_schema = anthropic_schema # type: ignore
+    func.openai_schema = openai_schema  # type: ignore
+    func.anthropic_schema = anthropic_schema  # type: ignore
 
     return func

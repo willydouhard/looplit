@@ -16,7 +16,8 @@ export default function CanvasHeader() {
       const state = yamlParse(canvas.aiState, {}) as ILooplitState;
       setEditState((prev) => {
         const next = { ...prev };
-        next[canvas.lineageId] = state;
+        const prevState = next[canvas.lineageId] || {};
+        next[canvas.lineageId] = { ...prevState, ...state };
         return next;
       });
       setCanvas(undefined);
