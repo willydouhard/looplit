@@ -3,7 +3,7 @@ import inspect
 import os
 from asyncio import CancelledError
 from datetime import datetime
-from typing import Callable, TypedDict, get_type_hints
+from typing import Callable, TypedDict, TypeVar, Union, get_type_hints
 from uuid import uuid4
 
 from pydantic import create_model
@@ -142,40 +142,93 @@ def stateful(init_state: State):
     return decorator
 
 
-def tool(func: Callable) -> Callable:
-    annotations = get_type_hints(func)
-    return_type = annotations.pop("return", None)
+F = TypeVar("F", bound=Callable)
 
-    # Extract parameter descriptions from function signature
-    params = {}
-    for name, param in inspect.signature(func).parameters.items():
-        default = param.default if param.default != inspect.Parameter.empty else ...
-        if isinstance(default, FieldInfo):
-            params[name] = (param.annotation, default)  # type: ignore
-        else:
-            params[name] = (param.annotation, default)  # type: ignore
 
-    ParamModel = create_model(
-        f"{func.__name__}_params",
-        **params,  # type: ignore
-    )
+def tool(func_or_ignore_args: Union[Callable, list[str], None] = None) -> Callable:
+    # If called directly with the function
+    if callable(func_or_ignore_args):
+        # Execute decorator logic directly
+        func = func_or_ignore_args
+        annotations = get_type_hints(func)
+        return_type = annotations.pop("return", None)
 
-    openai_schema = {
-        "type": "function",
-        "function": {
+        params = {}
+        for name, param in inspect.signature(func).parameters.items():
+            default = param.default if param.default != inspect.Parameter.empty else ...
+            if isinstance(default, FieldInfo):
+                params[name] = (param.annotation, default)  # type: ignore
+            else:
+                params[name] = (param.annotation, default)  # type: ignore
+
+        ParamModel = create_model(
+            f"{func.__name__}_params",
+            **params,  # type: ignore
+        )
+
+        openai_schema = {
+            "type": "function",
+            "function": {
+                "name": func.__name__,
+                "description": func.__doc__,
+                "parameters": ParamModel.model_json_schema(),
+            },
+        }
+
+        anthropic_schema = {
             "name": func.__name__,
             "description": func.__doc__,
-            "parameters": ParamModel.model_json_schema(),
-        },
-    }
+            "input_schema": ParamModel.model_json_schema(),
+        }
 
-    anthropic_schema = {
-        "name": func.__name__,
-        "description": func.__doc__,
-        "input_schema": ParamModel.model_json_schema(),
-    }
+        func.openai_schema = openai_schema  # type: ignore
+        func.anthropic_schema = anthropic_schema  # type: ignore
 
-    func.openai_schema = openai_schema  # type: ignore
-    func.anthropic_schema = anthropic_schema  # type: ignore
+        return func
 
-    return func
+    # If called with arguments
+    def decorator(func: F) -> F:
+        ignore_args = (
+            func_or_ignore_args if isinstance(func_or_ignore_args, list) else []
+        )
+
+        annotations = get_type_hints(func)
+        return_type = annotations.pop("return", None)
+
+        params = {}
+        for name, param in inspect.signature(func).parameters.items():
+            if name in ignore_args:
+                continue
+
+            default = param.default if param.default != inspect.Parameter.empty else ...
+            if isinstance(default, FieldInfo):
+                params[name] = (param.annotation, default)  # type: ignore
+            else:
+                params[name] = (param.annotation, default)  # type: ignore
+
+        ParamModel = create_model(
+            f"{func.__name__}_params",
+            **params,  # type: ignore
+        )
+
+        openai_schema = {
+            "type": "function",
+            "function": {
+                "name": func.__name__,
+                "description": func.__doc__,
+                "parameters": ParamModel.model_json_schema(),
+            },
+        }
+
+        anthropic_schema = {
+            "name": func.__name__,
+            "description": func.__doc__,
+            "input_schema": ParamModel.model_json_schema(),
+        }
+
+        func.openai_schema = openai_schema  # type: ignore
+        func.anthropic_schema = anthropic_schema  # type: ignore
+
+        return func
+
+    return decorator
