@@ -31,4 +31,6 @@ def map_tool_calls(messages, stateful_func_names):
             if func_name in stateful_func_names:
                 if not func_name in FUNCS_TO_TOOL_CALLS:
                     FUNCS_TO_TOOL_CALLS[func_name] = []
+                elif tool_call["id"] in FUNCS_TO_TOOL_CALLS[func_name]:
+                    continue
                 FUNCS_TO_TOOL_CALLS[func_name].append(tool_call["id"])
