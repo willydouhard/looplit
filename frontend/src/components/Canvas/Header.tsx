@@ -21,7 +21,7 @@ export default function CanvasHeader() {
         return next;
       });
       setCanvas(undefined);
-      toast.info('Modifications applied to edit mode.');
+      toast.info('Entering edit mode.');
     } catch (err) {
       toast.error('Failed to parse canvas state: ' + String(err));
     }
