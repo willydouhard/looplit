@@ -109,6 +109,8 @@ The examples above demonstrate a common pattern involving a router Agent that ca
 
 ## 🖼️ Looplit Canvas
 
+https://github.com/user-attachments/assets/a3291599-d1f7-4d5b-b2bc-c6fc8f93f97d
+
 Looplit make it easy to leverage LLMs to iterate on your system prompt/tool definitions:
 1. Click on the ✨ button below the faulty assistant/tool message
 2. Type a message describing the issue
